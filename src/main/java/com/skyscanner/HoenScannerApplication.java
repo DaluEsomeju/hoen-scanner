@@ -1,5 +1,12 @@
 package com.skyscanner;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Arrays;
+import java.util.ArrayList;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.dropwizard.core.Application;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
@@ -21,7 +28,27 @@ public class HoenScannerApplication extends Application<HoenScannerConfiguration
     }
 
     @Override
-    public void run(final HoenScannerConfiguration configuration, final Environment environment) {
+    public void run(final HoenScannerConfiguration configuration, final Environment environment) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        List<SearchResult> carResults = Arrays.asList(
+            mapper.readValue (
+                getClass().getClassLoader().getResource("rental_cars.json"),
+                SearchResult[].class
+            )
+        );
+        
+        List<SearchResult> hotelResults = Arrays.asList(
+            mapper.readValue (
+                getClass().getClassLoader().getResource("hotels.json"),
+                SearchResult[].class
+            )
+        );
+
+        List<SearchResult> SearchResults = new ArrayList<>();
+        SearchResults.addAll(carResults);
+        SearchResults.addAll(hotelResults);
+        final SearchResource resource = new SearchResource(SearchResults);
+        environment.jersey().register(resource);
 
     }
 
